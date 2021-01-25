@@ -1,0 +1,63 @@
+##HIVE QUERY FOR Creating Database, Loading Data
+## Name: Saira
+
+######Creating Database
+CREATE DATABASE WQD7007;
+Use WQD7007;
+
+
+
+
+#drop table Country_WEO;
+create table Country_WEO 
+(WEOCountryCode String, ISO String, WEOSubjectCode String, Country String, SubjectDescriptor String, SubjectNotes String, Units String, Scale String, Country_Series_specificNotes String, `1980` float ,`1981` float ,`1982` float ,`1983` float ,`1984` float ,`1985` float ,`1986` float ,`1987` float ,`1988` float ,`1989` float ,`1990` float ,`1991` float ,`1992` float ,`1993` float ,`1994` float ,`1995` float ,`1996` float ,`1997` float ,`1998` float ,`1999` float ,`2000` float ,`2001` float ,`2002` float ,`2003` float ,`2004` float ,`2005` float ,`2006` float ,`2007` float ,`2008` float ,`2009` float ,`2010` float ,`2011` float ,`2012` float ,`2013` float ,`2014` float ,`2015` float ,`2016` float ,`2017` float ,`2018` float ,`2019` float ,`2020` float ,`2021` float ,`2022` float ,`2023` float ,`2024` float ,`2025` float , EstimatesStartAfter int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+#Loading data from csv into Hive
+LOAD DATA LOCAL INPATH '/home/ubuntu/Downloads/IMF\ Data/WEOOct2020all.csv'  into table Country_WEO;
+
+
+
+#drop table Country_Loan_staging;
+
+create table Country_Loan_staging(
+EndofPeriod String,LoanNumber String ,Region String ,CountryCode String ,Country String ,Borrower String ,GuarantorCountryCode String ,Guarantor String ,LoanType String ,LoanStatus String ,InterestRate String ,CurrencyofCommitment String ,ProjectID String ,ProjectName String ,OriginalPrincipalAmount float ,CancelledAmount float ,UndisbursedAmount float ,DisbursedAmount float ,RepaidtoIBRD float ,DuetoIBRD float ,ExchangeAdjustment float ,BorrowersObligation float ,Sold3rdParty float ,Repaid3rdParty float ,Due3rdParty float ,LoansHeld int, FirstRepaymentDate String, LastRepaymentDate String, AgreementSigningDate String, BoardApprovalDate String, EffectiveDate String, ClosedDate String, LastDisbursementDate Date)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+
+#Loading data in Staging from CSV
+LOAD DATA LOCAL INPATH '/home/ubuntu/Downloads/WorldBAnkIBRD/IBRD_Statement_Of_Loans_-_Historical_Data.csv'  into table Country_Loan_staging;
+
+#Checking the records
+select  *  from Country_Loan_staging limit 5;
+
+#Creating the Country_Loan table
+create table Country_Loan(
+EndofPeriod Date,LoanNumber String ,Region String ,CountryCode String ,Country String ,Borrower String ,GuarantorCountryCode String ,Guarantor String ,LoanType String ,LoanStatus String ,InterestRate String ,CurrencyofCommitment String ,ProjectID String ,ProjectName String ,OriginalPrincipalAmount float ,CancelledAmount float ,UndisbursedAmount float ,DisbursedAmount float ,RepaidtoIBRD float ,DuetoIBRD float ,ExchangeAdjustment float ,BorrowersObligation float ,Sold3rdParty float ,Repaid3rdParty float ,Due3rdParty float ,LoansHeld int, FirstRepaymentDate Date, LastRepaymentDate Date, AgreementSigningDate Date, BoardApprovalDate Date, EffectiveDate Date, ClosedDate Date, LastDisbursementDate Date)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+#Loading data from Staging to Country_Loan table
+INSERT INTO TABLE Country_Loan  
+select to_date(from_unixtime(unix_timestamp(EndofPeriod , 'MM/dd/yyyy hh:mm:ss a'))), LoanNumber,Region,CountryCode,Country,Borrower,GuarantorCountryCode,Guarantor,LoanType,LoanStatus,InterestRate,CurrencyofCommitment,ProjectID,ProjectName,OriginalPrincipalAmount,CancelledAmount,UndisbursedAmount,DisbursedAmount,RepaidtoIBRD,DuetoIBRD,ExchangeAdjustment,BorrowersObligation,Sold3rdParty,Repaid3rdParty,Due3rdParty,LoansHeld,to_date(from_unixtime(unix_timestamp(FirstRepaymentDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(LastRepaymentDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(AgreementSigningDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(BoardApprovalDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(EffectiveDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(ClosedDate, 'MM/dd/yyyy hh:mm:ss a'))), to_date(from_unixtime(unix_timestamp(LastDisbursementDate, 'MM/dd/yyyy hh:mm:ss a')))  from Country_Loan_staging ;
+
+#Checking the records
+select  *  from Country_Loan limit 5;
+
+select * from Country_Loan where Country='Malaysia' limit 5;
+
+select * from Country_Loan where Country='Malaysia' order by LastDisbursementDate desc;
+
+
+
+
+select  *  from Country_Loan_staging limit 5;
+
+
+
+
